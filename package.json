@@ -1,0 +1,23 @@
+{
+  "name": "01",
+  "version": "1.0.0",
+  "description": "API Integration GPT-HOLMES",
+  "main": "main.ts",
+  "author": "Vinicius Gomes",
+  "license": "MIT",
+  "scripts": {
+    "start:prod": "node dist/main.js",
+    "start:dev": "nodemon --exec ts-node src/main.ts",
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.0",
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
