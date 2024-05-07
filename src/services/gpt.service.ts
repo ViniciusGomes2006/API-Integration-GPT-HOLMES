@@ -11,7 +11,6 @@ const openai = new OpenAI({
 	apiKey: gpt_api_token,
 });
 
-
 /**
  * Asynchronously generates chat responses based on the provided prompt using GPT-4 Turbo model.
  *

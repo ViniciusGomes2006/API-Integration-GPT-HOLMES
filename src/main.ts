@@ -1,13 +1,9 @@
 import express from "express";
-import { getProcessId } from "./v1/holmes/holmes.service";
+import { Router } from "./router/router";
 
 const app = express();
 
-app.get("/", (req, res) => {
-	res.end("Olá, mundo!");
-});
-
-getProcessId("66354214a7524200878da88f");
+app.use("/v1", Router);
 
 app.listen(3000, () => {
 	console.log("Servidor rodando na porta 3000");
