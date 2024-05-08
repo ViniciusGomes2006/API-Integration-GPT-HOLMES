@@ -3,12 +3,12 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const gpt_organization_token = process.env.OPENAI_ORG_ID;
-const gpt_api_token = process.env.OPENAI_API_KEY;
+const gptOrganizatioToken = process.env.OPENAI_ORG_ID;
+const gptApiToken = process.env.OPENAI_API_KEY;
 
 const openai = new OpenAI({
-	organization: gpt_organization_token,
-	apiKey: gpt_api_token,
+	organization: gptOrganizatioToken,
+	apiKey: gptApiToken,
 });
 
 /**
@@ -19,15 +19,11 @@ const openai = new OpenAI({
  * @param {string} prompt - The text prompt to generate responses.
  * @return {AsyncGenerator<string>} An async generator yielding chat response strings.
  */
-export async function* chatGenerate(_name: string = "prompt", _role: "function" | "system" | "user" | "assistant" = "user", prompt: string): AsyncGenerator<string> {
+export async function chatGenerate(_name: string = "prompt", _role: "function" | "system" | "user" | "assistant" = "user", prompt: string) {
 	const assistant = await openai.chat.completions.create({
 		model: "gpt-4-turbo",
 		messages: [{ name: _name, role: _role, content: prompt }],
-		stream: true,
 	});
 
-	for await (const chunk of assistant) {
-		const response = chunk.choices[0].delta?.content || "";
-		yield response;
-	}
+	return assistant.choices[0].message.content;
 }
