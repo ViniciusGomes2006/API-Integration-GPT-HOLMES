@@ -1,6 +1,7 @@
 import axios from "axios";
 import dotenv from "dotenv";
 import { RequestBody } from "./holmes.controller";
+import { TaskProperty } from "./holmes.interfaces";
 
 dotenv.config();
 
@@ -48,4 +49,18 @@ export async function postActionTask(taskId: string, body: RequestBody) {
 	} catch (error) {
 		return error;
 	}
+}
+
+export function checkTaskValueIsNull(taskArray: TaskProperty[], taskId: string): boolean {
+	let taskValueIsNull: boolean = false;
+
+	taskArray.forEach(task => {
+		if (task.id !== taskId) return;
+
+		taskValueIsNull = !task.value ? true : false;
+	});
+
+	console.log(taskValueIsNull);
+
+	return taskValueIsNull;
 }

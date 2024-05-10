@@ -1,58 +1,29 @@
 import express from "express";
-import bodyParser from "body-parser";
-import { getLastActivities, getTaskParameters, postActionTask } from "./holmes.service";
+import { checkTaskValueIsNull, getLastActivities, getTaskParameters, postActionTask } from "./holmes.service";
 import { chatGenerate } from "../../services/gpt.service";
-import axios from "axios";
+import { ActionDetails, Task, TaskProperty,  } from "./holmes.interfaces";
 
 export const holmesRouter = express.Router();
-
-interface TaskParameter {
-  id: string;
-  name: string;
-  value: string;
-}
-
-interface ActionParameter {
-  id: string;
-  name: string;
-}
-
-interface Task {
-  action_id: string;
-  property_values: {
-    id: string;
-    value: string;
-  }[];
-  confirm_action: boolean;
-}
 
 export interface RequestBody {
   task: Task;
 }
 
-holmesRouter.get("/", bodyParser.json(), async (req, res) => {
+holmesRouter.get("/", express.json(), async (req, res) => {
 	try {
 		const { id } = req.body;
 		const lastActivityId = await getLastActivities(id);
 		const taskParameters = await getTaskParameters(lastActivityId);
-		const actionArray: ActionParameter[] = Object.values(taskParameters.actions);
-		const taskArray: TaskParameter[] = Object.values(taskParameters.properties);
+		const actionArray: ActionDetails[] = Object.values(taskParameters.actions);
+		const taskArray: TaskProperty[] = Object.values(taskParameters.properties);
 		const actionId = actionArray[0].id;
 
-		let taskValueIsNull: boolean = false;
-
-		taskArray.forEach(task => {
-			if (task.id !== "a3f58400-08d4-11ef-b7c2-b357a94668ac") return;
-
-			taskValueIsNull = !task.value ? true : false;
-		});
-
-		if (!taskValueIsNull) {
-			return res.end("Ja existe um valor na atividade");
+		if(!checkTaskValueIsNull(taskArray, "a3f58400-08d4-11ef-b7c2-b357a94668ac")) {
+			return res.status(400).send("Task value is not null");
 		}
-    
+
 		const newData = await chatGenerate("prompt", "user", "Gere um lorem impsun de 10 palavras");
-		const body: RequestBody = {
+		const testBody: RequestBody = {
 			task: {
 				action_id: actionId,
 				property_values: [
@@ -65,11 +36,9 @@ holmesRouter.get("/", bodyParser.json(), async (req, res) => {
 			}
 		};
 
-		postActionTask(lastActivityId, body).then(data => console.log(data));
-
-		return res.end(lastActivityId);
+		return postActionTask(lastActivityId, testBody).then(data => res.json(data));
 	} catch (error) {
-		console.log(error);
+		// console.log(error);
 	}
 
 });
