@@ -1,7 +1,9 @@
 import express from "express";
-import { checkTaskValueIsNull, donwloadDocument, getDocuments, getLastActivities, getTaskParameters, postActionTask, saveDocuments } from "./holmes.service";
+import { checkTaskValueIsNull, getDocuments, getLastActivities, getTaskParameters, postActionTask } from "./holmes.service";
 import { chatGenerate } from "../../services/gpt.service";
 import { ActionDetails, Task, TaskProperty, userProperty,  } from "./holmes.interfaces";
+import { downloadDocument } from "../../utils/imageServices";
+import { promptSystem } from "./holmes.prompt";
 
 export const holmesRouter = express.Router();
 
@@ -31,45 +33,43 @@ holmesRouter.get("/", express.json(), async (req, res) => {
 				zip_code: properties["CEP"] || ""
 			}
 		};
-  
+
+		const lastActivityId = await getLastActivities(id);
+		const taskParameters = await getTaskParameters(lastActivityId);
+
+		const actionArray: ActionDetails[] = Object.values(taskParameters.actions);
+		const taskArray: TaskProperty[] = Object.values(taskParameters.properties);
+
+		const actionId = actionArray[0].id;
+    
+		if(!checkTaskValueIsNull(taskArray, "37fd3370-1c65-11ef-8893-0369865f015c")) {
+			return res.status(400).send("Task value is not null");
+		}
+
 		const documentData = await getDocuments(documents[0].document_id);
-		const binaryDataDocument = await donwloadDocument(documentData.url);
+		const binaryDataDocument = await downloadDocument(documentData.url);
 
-		saveDocuments(binaryDataDocument);
+		const {user_info, user_location} = userProperties;
+		const prompt = `Nome: ${user_info.name}, Nacionalidade: ${user_info.nationality}, N° de PASSAPORTE/RG: ${user_info.identification}, CPF: ${user_info.cpf}, Profissão: ${user_info.job}, Estado Civil: ${user_info.marital_status}, email: ${user_info.email}, Rua: ${user_location.address}, Bairro: ${user_location.neighborhood}, Cidade: ${user_location.city}, Estado: ${user_location.state}, CEP: ${user_location.zip_code}`;
 
-		// const lastActivityId = await getLastActivities(id);
-		// const taskParameters = await getTaskParameters(lastActivityId);
+		const newData = await chatGenerate("Crie uma qualificação: " + prompt, binaryDataDocument, promptSystem);
 
-		// const actionArray: ActionDetails[] = Object.values(taskParameters.actions);
-		// const taskArray: TaskProperty[] = Object.values(taskParameters.properties);
-		
-		// const actionId = actionArray[0].id;
+		const bodyRequest: RequestBody = {
+			task: {
+				action_id: actionId,
+				property_values: [
+					{
+						id: "37fd3370-1c65-11ef-8893-0369865f015c",
+						value: newData || ""
+					}
+				],
+				confirm_action: true
+			}
+		};
 
-		// console.log(taskArray);
-		// console.log(actionId);
-
-		// if(!checkTaskValueIsNull(taskArray, "a3f58400-08d4-11ef-b7c2-b357a94668ac")) {
-		// 	return res.status(400).send("Task value is not null");
-		// }
-
-		// const newData = await chatGenerate("prompt", "user", "Gere um lorem impsun de 10 palavras");
-		// const testBody: RequestBody = {
-		// 	task: {
-		// 		action_id: actionId,
-		// 		property_values: [
-		// 			{
-		// 				id: "a3f58400-08d4-11ef-b7c2-b357a94668ac",
-		// 				value: `${newData}`
-		// 			}
-		// 		],
-		// 		confirm_action: true
-		// 	}
-		// };
-
-		// return postActionTask(lastActivityId, testBody).then(data => res.json(data));
-		// return res.json(userProperties);
+		return postActionTask(lastActivityId, bodyRequest).then(data => res.json(data));
 	} catch (error) {
-		// console.log(error);
+		console.log(error);
 	}
 
 });

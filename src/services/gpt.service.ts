@@ -14,16 +14,44 @@ const openai = new OpenAI({
 /**
  * Asynchronously generates chat responses based on the provided prompt using GPT-4 Turbo model.
  *
- * @param {string} _name - The name of the chat participant. Defaults to "prompt".
- * @param {string} _role - The role of the chat participant. Can be "function", "system", "user", or "assistant". Defaults to "user".
  * @param {string} prompt - The text prompt to generate responses.
- * @return {AsyncGenerator<string>} An async generator yielding chat response strings.
+ * @param {Buffer | string} binaryDocument - The binary document or base64-encoded string to be included in the chat message.
+ * @param {string} promptSystem - The system prompt to be sent along with the user prompt.
+ * @return {Promise<string | null>} The generated assistant content or null if an error occurred.
  */
-export async function chatGenerate(_name: string = "prompt", _role: "function" | "system" | "user" | "assistant" = "user", prompt: string) {
-	const assistant = await openai.chat.completions.create({
-		model: "gpt-4-turbo",
-		messages: [{ name: _name, role: _role, content: prompt }],
-	});
+export async function chatGenerate(prompt: string, binaryDocument: Buffer | string, promptSystem: string) {
+	try {
+		const base64Image = binaryDocument.toString("base64");
 
-	return assistant.choices[0].message.content;
+		const assistant = await openai.chat.completions.create({
+			model: "gpt-4o",
+			messages: [
+				{
+					role: "system",
+					content: promptSystem
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "image_url",
+							image_url: {
+								url: `data:image/jpeg;base64,${base64Image}`
+							}
+						},
+						{
+							type: "text",
+							text: prompt
+						}
+					]
+				},
+			],
+		});
+  
+		const assistantContent: string | null = assistant.choices[0].message.content;
+
+		return assistantContent;
+	} catch (error) {
+		console.log(error);
+	}
 }

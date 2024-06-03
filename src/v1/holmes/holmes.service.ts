@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import axios from "axios";
 import dotenv from "dotenv";
 import { RequestBody } from "./holmes.controller";
@@ -50,37 +48,12 @@ export async function getDocuments(documentId: string) {
 		return error;
 	}
 }
-export async function donwloadDocument(urlDocument: string) {
-	try {
-		const response = await axios.get(`${urlDocument}`, {
-			responseType: "arraybuffer"
-		});
-
-		const binaryData = Buffer.from(response.data, "base64");
-		return binaryData;
-	} catch (error) {
-		return `${error}`;
-	}
-}
-
-export async function saveDocuments(binaryData: Buffer | string) {
-	const folderPath = "./gallery/documents";
-
-	if (!fs.existsSync(folderPath)) {
-		fs.mkdirSync(folderPath, { recursive: true });
-	}
-
-	const filePath = path.join(folderPath, "document.jpeg");
-
-	fs.writeFileSync(filePath, binaryData); 
-
-	return filePath;
-}
 
 export async function postActionTask(taskId: string, body: RequestBody) {
 	try {
 		const response = await axios.post(`https://app-api.holmesdoc.io/v1/tasks/${taskId}/action`, body, {
 			headers: {
+				"Content-Type": "application/json",
 				"api_token": holmesApiToken
 			}
 		});
