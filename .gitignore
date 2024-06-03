@@ -3,6 +3,7 @@
 *.bak
 *.swp
 *.temp
+*.env
 
 # Diretórios de dependências
 node_modules/
