@@ -1,7 +1,6 @@
 import axios from "axios";
 
-
-export async function downloadDocument(urlDocument: string) {
+export async function saveDocument(urlDocument: string) {
 	try {
 		const response = await axios.get(`${urlDocument}`, {
 			responseType: "arraybuffer"

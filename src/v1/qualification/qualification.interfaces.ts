@@ -1,8 +1,3 @@
-export interface ActionDetails {
-  id: string;
-  name: string;
-}
-
 export interface userIdentification {
   name: string
   nationality: string
@@ -23,17 +18,4 @@ export interface userInfoProperties {
 export interface userProperty {
   user_info: userIdentification
   user_location: userInfoProperties
-}
-
-export interface TaskProperty extends ActionDetails {
-  value: string;
-}
-
-export interface Task {
-  action_id: string;
-  property_values: {
-    id: string;
-    value: string;
-  }[];
-  confirm_action: boolean;
 }

@@ -1,7 +1,6 @@
 import axios from "axios";
 import dotenv from "dotenv";
-import { RequestBody } from "./holmes.controller";
-import { TaskProperty } from "./holmes.interfaces";
+import { RequestBody, TaskProperty } from "./holmesRequest.interface";
 
 dotenv.config();
 

@@ -1,17 +1,14 @@
 import express from "express";
-import { checkTaskValueIsNull, getDocuments, getLastActivities, getTaskParameters, postActionTask } from "./holmes.service";
+import { checkTaskValueIsNull, getDocuments, getLastActivities, getTaskParameters, postActionTask } from "../../utils/holmesRequest/holmesRequest.Services";
 import { chatGenerate } from "../../services/gpt.service";
-import { ActionDetails, Task, TaskProperty, userProperty,  } from "./holmes.interfaces";
-import { downloadDocument } from "../../utils/imageServices";
-import { promptSystem } from "./holmes.prompt";
+import { userProperty } from "./qualification.interfaces";
+import { ActionDetails, TaskProperty, RequestBody } from "../../utils/holmesRequest/holmesRequest.interface";
+import { saveDocument } from "../../utils/imageServices";
+import { promptSystem } from "./qualification.prompt";
 
-export const holmesRouter = express.Router();
+export const qualificationRouter = express.Router();
 
-export interface RequestBody {
-  task: Task;
-}
-
-holmesRouter.get("/", express.json(), async (req, res) => {
+qualificationRouter.get("/", express.json(), async (req, res) => {
 	try {
 		const { id, properties, documents } = req.body;
 
@@ -43,11 +40,11 @@ holmesRouter.get("/", express.json(), async (req, res) => {
 		const actionId = actionArray[0].id;
     
 		if(!checkTaskValueIsNull(taskArray, "37fd3370-1c65-11ef-8893-0369865f015c")) {
-			return res.status(400).send("Task value is not null");
+			return res.status(400).send("Task value not are null");
 		}
 
 		const documentData = await getDocuments(documents[0].document_id);
-		const binaryDataDocument = await downloadDocument(documentData.url);
+		const binaryDataDocument = await saveDocument(documentData.url);
 
 		const {user_info, user_location} = userProperties;
 		const prompt = `Nome: ${user_info.name}, Nacionalidade: ${user_info.nationality}, N° de PASSAPORTE/RG: ${user_info.identification}, CPF: ${user_info.cpf}, Profissão: ${user_info.job}, Estado Civil: ${user_info.marital_status}, email: ${user_info.email}, Rua: ${user_location.address}, Bairro: ${user_location.neighborhood}, Cidade: ${user_location.city}, Estado: ${user_location.state}, CEP: ${user_location.zip_code}`;
@@ -73,3 +70,5 @@ holmesRouter.get("/", express.json(), async (req, res) => {
 	}
 
 });
+
+export { RequestBody };
