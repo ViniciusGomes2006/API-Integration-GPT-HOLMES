@@ -1,10 +1,10 @@
 import express from "express";
-import { checkTaskValueIsNull, getDocuments, getLastActivities, getTaskParameters, postActionTask } from "../../utils/holmesRequest/holmesRequest.Services";
+import { checkTaskValueIsNull, getDocuments, getLastActivities, getTaskParameters, postActionTask } from "../../services/holmesRequest/holmesRequest.Services";
 import { chatGenerate } from "../../services/gpt.service";
 import { userProperty } from "./qualification.interfaces";
-import { ActionDetails, TaskProperty, RequestBody } from "../../utils/holmesRequest/holmesRequest.interface";
+import { ActionDetails, TaskProperty, RequestBody } from "../../services/holmesRequest/holmesRequest.interface";
 import { saveDocument } from "../../utils/imageServices";
-import { promptSystem } from "./qualification.prompt";
+import { promptSystem } from "../../utils/prompt/promptData";
 
 export const qualificationRouter = express.Router();
 

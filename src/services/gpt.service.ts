@@ -19,11 +19,11 @@ const openai = new OpenAI({
  * @param {string} promptSystem - The system prompt to be sent along with the user prompt.
  * @return {Promise<string | null>} The generated assistant content or null if an error occurred.
  */
-export async function chatGenerate(prompt: string, binaryDocument: Buffer | string, promptSystem: string) {
+export async function chatGenerate(prompt: string, binaryDocument: Buffer | string | null, promptSystem: string) {
 	try {
-		const base64Image = binaryDocument.toString("base64");
+		const base64Image = binaryDocument ? binaryDocument.toString("base64") : null;
 
-		const assistant = await openai.chat.completions.create({
+		const assistant =  await openai.chat.completions.create({
 			model: "gpt-4o",
 			messages: [
 				{
@@ -33,6 +33,9 @@ export async function chatGenerate(prompt: string, binaryDocument: Buffer | stri
 				{
 					role: "user",
 					content: [
+						base64Image ?? {
+
+						},
 						{
 							type: "image_url",
 							image_url: {

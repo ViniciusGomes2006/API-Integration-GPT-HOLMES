@@ -1,7 +1,9 @@
 import express from "express";
 import { propertiesType } from "./commission.interface";
-import { checkTaskValueIsNull, getLastActivities, getTaskParameters } from "../../utils/holmesRequest/holmesRequest.Services";
-import { ActionDetails, TaskProperty } from "../../utils/holmesRequest/holmesRequest.interface";
+import { checkTaskValueIsNull, getLastActivities, getTaskParameters } from "../../services/holmesRequest/holmesRequest.Services";
+import { ActionDetails, TaskProperty } from "../../services/holmesRequest/holmesRequest.interface";
+import { chatGenerate } from "../../services/gpt.service";
+import { promptSystem } from "../../utils/prompt/promptData";
 
 export const commissionRouter = express.Router();
 
@@ -30,36 +32,19 @@ commissionRouter.post("/", express.json(), async (req, res) => {
 		return res.status(400).send("Error: task value not are null");
 	}
 
-	const closedDeal = TaskProperties.total_commission * 0.25;
-	const registrationGoal = TaskProperties.total_commission * 0.03;
-	const photoGoal = TaskProperties.total_commission * 0.03;
-	const productivityGoal = TaskProperties.total_commission * 0.02;
-	const adminTax = TaskProperties.total_commission * (TaskProperties.admin_tax / 100);
-	const propertyRegistered = TaskProperties.total_commission * 0.08;
+	const closedDeal = `Fechou o negócio: ${TaskProperties.closed_deal}`;
+	const photoGoal = `Meta de fotos: ${TaskProperties.photo_goal}`;
+	const registrationGoal = `Meta de cadastros: ${TaskProperties.registration_goal}`;
+	const productivityGoal = `Meta de produtividade: ${TaskProperties.productivity_goal}`;
+	const adminTax = `Taxa de adm: ${TaskProperties.admin_tax}%`;
+	const propertyRegistered = `Cadastrou o imóvel: ${TaskProperties.property_registered}`;
+	const totalValue = TaskProperties.total_commission;
+  
+	const prompt = `${closedDeal} • ${registrationGoal} • ${photoGoal} • ${productivityGoal} • ${adminTax} • ${propertyRegistered}`;
 
-	let taskValue: string = "";
-	let totalValue: number = 0;
-
-	function updateTaskValue(condition: boolean | number, value: number, description: string) {
-		if (condition) {
-			totalValue += value;
-			taskValue += `${description}: ${value}, `;
-		}
-	}
-
-	updateTaskValue(TaskProperties.closed_deal, closedDeal, "Fechou negócio");
-	updateTaskValue(TaskProperties.registration_goal, registrationGoal, "Meta de cadastros");
-	updateTaskValue(TaskProperties.photo_goal, photoGoal, "Meta de fotos");
-	updateTaskValue(TaskProperties.productivity_goal, productivityGoal, "Meta de produtividade");
-	updateTaskValue(TaskProperties.admin_tax, adminTax, "Taxa de adm");
-	updateTaskValue(TaskProperties.property_registered, propertyRegistered, "Cadastrou Imóvel");
-
-	const localeValue = totalValue.toLocaleString("pt-BR", {
-		style: "currency",
-		currency: "BRL",
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2
+	chatGenerate(prompt, null, promptSystem).then(data => {
+		return res.json(data);
 	});
 
-	return res.json(`${taskValue}e o Valor total: ${localeValue}`);
+	return res.json(`${prompt} • Valor total: ${totalValue}`);
 });
