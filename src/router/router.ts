@@ -1,11 +1,7 @@
 import express from "express";
-import { qualificationRouter } from "../v1/qualification/qualification.controller";
-import { commissionRouter } from "../v1/commission/commission.controller";
+import { contractRouter } from "../v1/contract/contract.controller";
 
 export const Router = express.Router();
 
-// http://domain/v1/qualification
-Router.use("/qualification", qualificationRouter);
-
-// http://domain/v1/commission
-Router.use("/commission", commissionRouter);
+// http://domain/v1/contract
+Router.use("/contract", contractRouter);

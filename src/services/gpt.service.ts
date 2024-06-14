@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import dotenv from "dotenv";
+import { promptSystem } from "../utils/prompt/promptData";
 
 dotenv.config();
 
@@ -19,9 +20,10 @@ const openai = new OpenAI({
  * @param {string} promptSystem - The system prompt to be sent along with the user prompt.
  * @return {Promise<string | null>} The generated assistant content or null if an error occurred.
  */
-export async function chatGenerate(prompt: string, binaryDocument: Buffer | string | null, promptSystem: string) {
+export async function chatGenerate(prompt: string, binaryDocument: Buffer | string | null, binaryDocument2: Buffer | string | null) {
 	try {
 		const base64Image = binaryDocument ? binaryDocument.toString("base64") : null;
+		const base64Image2 = binaryDocument2 ? binaryDocument2.toString("base64") : null;
 
 		const assistant =  await openai.chat.completions.create({
 			model: "gpt-4o",
@@ -33,13 +35,10 @@ export async function chatGenerate(prompt: string, binaryDocument: Buffer | stri
 				{
 					role: "user",
 					content: [
-						base64Image ?? {
-
-						},
 						{
 							type: "image_url",
 							image_url: {
-								url: `data:image/jpeg;base64,${base64Image}`
+								url: `data:image/jpeg;base64,${base64Image}; data:image/jpeg;base64,${base64Image2}`
 							}
 						},
 						{
